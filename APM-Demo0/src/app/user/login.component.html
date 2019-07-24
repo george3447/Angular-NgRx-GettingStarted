@@ -4,7 +4,6 @@
     <div class="card-header">
       {{pageTitle}}
     </div>
-
     <div class="card-body">
       <form class="needs-validation" novalidate (ngSubmit)="login(loginForm)" #loginForm="ngForm" autocomplete="off">
         <fieldset>
@@ -68,9 +67,9 @@
       <div class="row">
         <div class="form-check col-md-7">
           <label>
-            <input class="form-check-input" 
-                   type="checkbox" 
-                   (change)="checkChanged($event.target.checked)" 
+            <input class="form-check-input"
+                   type="checkbox"
+                   (change)="checkChanged($event.target.checked)"
                    [checked]="maskUserName">
             Mask user name
           </label>
