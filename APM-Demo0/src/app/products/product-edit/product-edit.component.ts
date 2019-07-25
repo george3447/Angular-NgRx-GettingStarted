@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Store, select } from '@ngrx/store';
+import { untilDestroyed } from 'ngx-take-until-destroy';
 
 import { Product } from '../product';
 import { ProductService } from '../product.service';
 import { GenericValidator } from '../../shared/generic-validator';
 import { NumberValidators } from '../../shared/number.validator';
 import * as fromProduct from '../state/product.reducer';
-import { Store, select } from '@ngrx/store';
 import { ClearCurrentProduct, SetCurrentProduct } from '../state/product.actions';
 
 @Component({
@@ -63,10 +64,11 @@ export class ProductEditComponent implements OnInit, OnDestroy {
     });
 
     // Watch for changes to the currently selected product
-    // TODO: Unsubscribe
-    this.store.pipe(select(fromProduct.getCurrentProduct)).subscribe(
-      currentProduct => this.displayProduct(currentProduct)
-    );
+    this.store.pipe(select(fromProduct.getCurrentProduct))
+      .pipe(untilDestroyed(this))
+      .subscribe(
+        currentProduct => this.displayProduct(currentProduct)
+      );
 
     // Watch for value changes
     this.productForm.valueChanges.subscribe(

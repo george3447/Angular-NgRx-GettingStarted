@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store, select } from '@ngrx/store';
+import { untilDestroyed } from 'ngx-take-until-destroy';
 
 import { Product } from '../product';
-import { ProductService } from '../product.service';
 import * as fromProduct from '../state/product.reducer';
-import { ToggleProductCode, InitializeCurrentProduct, SetCurrentProduct } from '../state/product.actions';
+import { ToggleProductCode, InitializeCurrentProduct, SetCurrentProduct, Load } from '../state/product.actions';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'pm-product-list',
@@ -13,31 +14,32 @@ import { ToggleProductCode, InitializeCurrentProduct, SetCurrentProduct } from '
 })
 export class ProductListComponent implements OnInit, OnDestroy {
   pageTitle = 'Products';
-  errorMessage: string;
-
   displayCode: boolean;
-
-  products: Product[];
+  products$: Observable<Product[]>;
 
   // Used to highlight the selected product in the list
   selectedProduct: Product | null;
 
-  constructor(private productService: ProductService, private store: Store<fromProduct.State>) { }
+  errorMessage$: Observable<string>;
+
+  constructor(private store: Store<fromProduct.State>) { }
 
   ngOnInit(): void {
-    // TODO: Unsubscribe
-    this.store.pipe(select(fromProduct.getCurrentProduct)).subscribe(
-      currentProduct => this.selectedProduct = currentProduct
-    );
+    this.store.pipe(select(fromProduct.getCurrentProduct))
+      .pipe(untilDestroyed(this))
+      .subscribe(
+        currentProduct => this.selectedProduct = currentProduct
+      );
 
-    this.productService.getProducts().subscribe(
-      (products: Product[]) => this.products = products,
-      (err: any) => this.errorMessage = err.error
-    );
+    this.errorMessage$ = this.store.pipe(select(fromProduct.getError));
 
-    // TODO: Unsubscribe
-    this.store.pipe(select(fromProduct.getShowProductCode)).subscribe(
-      showProductCode => { this.displayCode = showProductCode; });
+    this.store.dispatch(new Load());
+    this.products$ = this.store.pipe(select(fromProduct.getProducts));
+
+    this.store.pipe(select(fromProduct.getShowProductCode))
+      .pipe(untilDestroyed(this))
+      .subscribe(
+        showProductCode => { this.displayCode = showProductCode; });
   }
 
   ngOnDestroy(): void {
