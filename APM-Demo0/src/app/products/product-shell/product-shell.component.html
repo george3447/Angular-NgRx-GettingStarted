@@ -1,8 +1,24 @@
-<div class='row'>
-  <div class='col-md-4'>
-    <pm-product-list></pm-product-list>
+<div class="row">
+  <div class="col-md-4">
+    <pm-product-list
+      [displayCode]="displayCode$ | async"
+      [products]="products$ | async"
+      [currentProduct]="currentProduct$ | async"
+      [errorMessage]="errorMessage$ | async"
+      (showProductCode)="showProductCode($event)"
+      (addProduct)="addProduct()"
+      (selectProduct)="selectProduct($event)"
+    >
+    </pm-product-list>
   </div>
-  <div class='col-md-8'>
-    <pm-product-edit></pm-product-edit>
+  <div class="col-md-8">
+    <pm-product-edit
+      [currentProduct]="currentProduct$ | async"
+      [errorMessage]="errorMessage$ | async"
+      (create)="create($event)"
+      (update)="update($event)"
+      (delete)="delete($event)"
+      (clearCurrent)="clearCurrent()"
+    ></pm-product-edit>
   </div>
 </div>
