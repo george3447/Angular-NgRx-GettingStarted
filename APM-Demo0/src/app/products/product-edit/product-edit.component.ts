@@ -4,11 +4,10 @@ import { Store, select } from '@ngrx/store';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 
 import { Product } from '../product';
-import { ProductService } from '../product.service';
 import { GenericValidator } from '../../shared/generic-validator';
 import { NumberValidators } from '../../shared/number.validator';
 import * as fromProduct from '../state/product.reducer';
-import { ClearCurrentProduct, SetCurrentProduct } from '../state/product.actions';
+import { ClearCurrentProduct, UpdateProduct, CreateProduct, DeleteProduct } from '../state/product.actions';
 
 @Component({
   selector: 'pm-product-edit',
@@ -28,7 +27,6 @@ export class ProductEditComponent implements OnInit, OnDestroy {
   private genericValidator: GenericValidator;
 
   constructor(private fb: FormBuilder,
-    private productService: ProductService,
     private store: Store<fromProduct.State>) {
 
     // Defines all of the validation messages for the form.
@@ -119,10 +117,7 @@ export class ProductEditComponent implements OnInit, OnDestroy {
   deleteProduct(): void {
     if (this.product && this.product.id) {
       if (confirm(`Really delete the product: ${this.product.productName}?`)) {
-        this.productService.deleteProduct(this.product.id).subscribe(
-          () => this.store.dispatch(new ClearCurrentProduct()),
-          (err: any) => this.errorMessage = err.error
-        );
+        this.store.dispatch(new DeleteProduct(this.product.id));
       }
     } else {
       // No need to delete, it was never saved
@@ -139,15 +134,9 @@ export class ProductEditComponent implements OnInit, OnDestroy {
         const p = { ...this.product, ...this.productForm.value };
 
         if (p.id === 0) {
-          this.productService.createProduct(p).subscribe(
-            product => this.store.dispatch(new SetCurrentProduct(product)),
-            (err: any) => this.errorMessage = err.error
-          );
+          this.store.dispatch(new CreateProduct(p));
         } else {
-          this.productService.updateProduct(p).subscribe(
-            product => this.store.dispatch(new SetCurrentProduct(product)),
-            (err: any) => this.errorMessage = err.error
-          );
+          this.store.dispatch(new UpdateProduct(p));
         }
       }
     } else {
